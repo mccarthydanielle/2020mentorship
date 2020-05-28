@@ -1,7 +1,7 @@
 var express = require('express');
-const https = require('https');
 var graphqlHTTP = require('express-graphql');
 var { buildSchema } = require('graphql');
+const axios = require('axios');
 
 //whole application should have consistent style (camel case, etc.)
 // we can change data type in resolvers 
@@ -12,19 +12,18 @@ var { buildSchema } = require('graphql');
 
 //next step is add an argument with country name 
 
+//https://covid-19.dataflowkit.com/v1
+
+
 var schema = buildSchema(`
 type CovidCase {
     country: String
-    countryAbbreviation: String
     totalCases: Int
     newCases: Int
     totalDeaths: Int
     newDeaths: Int
     totalRecovered: Int
     activeCases: Int
-    seriousCritical: Int
-    casesPerMillPop: Float
-    flag: String
 }
 
   type Query {
@@ -35,29 +34,34 @@ type CovidCase {
 
 // The root provides a resolver function for each API endpoint
 //refactor for error handling eventually
-//refactor using node-fetch, view it in graphiql 
+
+//how to handle if data doesn't have a field? 
+
+const fitToSchema = (info) => {
+
+  return {
+    country: info['Country_text'],
+    totalCases: Number(info['Total Cases_text'].replace(/[^a-z0-9-]/g, '')),
+    newCases: Number(info['New Cases_text'].replace(/[^a-z0-9-]/g, '')) ,
+    totalDeaths: Number(info['Total Deaths_text'].replace(/[^a-z0-9-]/g, '')),
+    newDeaths: Number(info['New Deaths_text'].replace(/[^a-z0-9-]/g, '')),
+    totalRecovered: Number(info['Total Recovered_text'].replace(/[^a-z0-9-]/g, '')),
+    activeCases: Number(info['Active Cases_text'].replace(/[^a-z0-9-]/g, '')),
+  }
+}
 
 var root = {
   hello: () => {
     return 'Hello world!';
   },
-  covidCases: (obj, args, context, info) => {
-    https.get('https://corona-virus-stats.herokuapp.com/api/v1/cases/countries-search', (resp) => {
-        let data = '';
-      
-        // A chunk of data has been recieved.
-        resp.on('data', (chunk) => {
-          data += chunk;
-        });
-      
-        // The whole response has been received. Print out the result.
-        resp.on('end', () => {
-          console.log(JSON.parse(data).explanation);
-        });
-      
-      }).on("error", (err) => {
-        console.log("Error: " + err.message);
-      });
+  covidCases: async (obj, args, context, info) =>  {
+
+    const response = await axios.get('https://covid-19.dataflowkit.com/v1')
+
+    const final = response.data.map(data => fitToSchema(data))
+
+    return final 
+
   },
 };
 
