@@ -8,7 +8,7 @@ https://covid-19.dataflowkit.com/v1
 
 [] Create individual field resolvers
 
-[] Create more schema and retrieve more data sources
+[x] Create more schema and retrieve more data sources
 
 [] Clean up Regex stuff, make everything more consistent
 
@@ -30,3 +30,5 @@ https://covid-19.dataflowkit.com/v1
 - whole application should have consistent style (camel case, etc.)
 - we can change data type in resolvers as well as field names. Mold data how we want to.
 - inside / outside exclamations. A trailing exclamation mark is used to denote a field that use a non-null type i.e. name: String! An exclamation point after a type specifically designates that type as non-nullable
+
+corona virus graphql server example https://github.com/rlindskog/covid19-graphql/blob/master/server.ts
